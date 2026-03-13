@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Velotric Intelligence — Euphree</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --surface-2: #f8f9fb;
+  --border: #e4e7ed;
+  --border-strong: #cdd2db;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  --blue: #2563eb;
+  --blue-light: #eff4ff;
+  --blue-mid: #93b4f8;
+  --green: #16a34a;
+  --green-light: #f0fdf4;
+  --amber: #d97706;
+  --amber-light: #fffbeb;
+  --red: #dc2626;
+  --red-light: #fef2f2;
+  --slate: #64748b;
+  --font: 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+  --radius: 8px;
+  --radius-sm: 5px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-inner {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 0 28px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.brand-tag {
+  background: var(--blue);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.brand-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.brand-sep {
+  width: 1px;
+  height: 16px;
+  background: var(--border-strong);
+}
+
+.brand-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+nav {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.tab-btn {
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.tab-btn:hover { background: var(--bg); color: var(--text-primary); }
+.tab-btn.active { background: var(--blue-light); color: var(--blue); font-weight: 600; }
+
+/* ── LAYOUT ── */
+main {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 24px 28px 56px;
+}
+
+.view { display: none; }
+.view.active { display: block; }
+
+.page-header {
+  margin-bottom: 20px;
+}
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+.page-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+.grid-1-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; }
+.mb16 { margin-bottom: 16px; }
+.mb20 { margin-bottom: 20px; }
+
+/* ── KPI STRIP ── */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
+}
+
+.kpi-label {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.kpi-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.kpi-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.kpi-card.blue .kpi-value { color: var(--blue); }
+.kpi-card.green .kpi-value { color: var(--green); }
+.kpi-card.amber .kpi-value { color: var(--amber); }
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.card-head {
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.card-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.card-body {
+  padding: 16px 20px;
+}
+
+.card-body.no-pad { padding: 0; }
+
+/* ── CHART SIZES ── */
+.chart-h240 { height: 240px; position: relative; }
+.chart-h280 { height: 280px; position: relative; }
+.chart-h300 { height: 300px; position: relative; }
+.chart-donut { height: 260px; display: flex; align-items: center; justify-content: center; }
+.chart-donut canvas { max-width: 260px; max-height: 260px; }
+
+/* ── TABLE ── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.data-table thead th {
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 9px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.data-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+.data-table tbody tr:last-child { border-bottom: none; }
+.data-table tbody tr:hover { background: var(--surface-2); }
+.data-table tbody td {
+  padding: 9px 16px;
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
+.data-table tbody td.primary { color: var(--text-primary); font-weight: 500; }
+.data-table tbody td.mono { font-family: var(--mono); font-size: 12px; }
+.data-table tbody td.num { font-family: var(--mono); font-size: 12.5px; font-weight: 500; color: var(--green); text-align: right; }
+.data-table tbody td.idx { color: var(--text-muted); font-family: var(--mono); font-size: 11px; width: 36px; }
+.table-scroll { overflow-y: auto; max-height: 420px; }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.badge-blue  { background: var(--blue-light);  color: var(--blue);  }
+.badge-green { background: var(--green-light); color: var(--green); }
+.badge-amber { background: var(--amber-light); color: var(--amber); }
+.badge-gray  { background: var(--surface-2);   color: var(--text-muted); border: 1px solid var(--border); }
+
+/* ── REP BARS ── */
+.rep-list { display: flex; flex-direction: column; gap: 8px; }
+.rep-row { display: flex; align-items: center; gap: 10px; }
+.rep-name { width: 140px; font-size: 13px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
+.rep-track { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
+.rep-fill { height: 100%; border-radius: 4px; }
+.rep-count { font-family: var(--mono); font-size: 11.5px; color: var(--text-muted); width: 24px; text-align: right; flex-shrink: 0; }
+
+/* ── FILTER ROW ── */
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; padding: 14px 16px; border-bottom: 1px solid var(--border); background: var(--surface-2); }
+.filter-input, .filter-select {
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 6px 11px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.filter-input { flex: 1; min-width: 200px; }
+.filter-input:focus, .filter-select:focus { border-color: var(--blue); }
+.filter-count { font-size: 12px; color: var(--text-muted); padding: 8px 16px; border-top: 1px solid var(--border); background: var(--surface-2); }
+
+/* ── MAP ── */
+.map-wrap { background: var(--surface-2); border-radius: 0 0 var(--radius) var(--radius); }
+.map-wrap svg { width: 100%; height: auto; display: block; }
+.state-path { stroke: var(--border); stroke-width: 0.6; cursor: pointer; transition: opacity 0.15s; }
+.state-path:hover { opacity: 0.7; }
+.map-footer { padding: 10px 16px; display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); }
+.map-gradient { width: 80px; height: 6px; background: linear-gradient(90deg, #dbeafe, #1d4ed8); border-radius: 3px; }
+.map-legend-label { font-size: 11px; color: var(--text-muted); }
+
+#tip {
+  position: fixed;
+  background: var(--text-primary);
+  color: #fff;
+  font-family: var(--font);
+  font-size: 12px;
+  padding: 6px 11px;
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 9999;
+  display: none;
+  line-height: 1.4;
+  box-shadow: var(--shadow-md);
+}
+#tip strong { display: block; font-size: 13px; font-weight: 600; }
+
+/* ── INSIGHT CARDS ── */
+.insight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.insight-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
+  display: flex;
+  gap: 14px;
+}
+.insight-card.accent-blue  { border-left: 3px solid var(--blue);  }
+.insight-card.accent-green { border-left: 3px solid var(--green); }
+.insight-card.accent-amber { border-left: 3px solid var(--amber); }
+.insight-card.accent-red   { border-left: 3px solid var(--red);   }
+.insight-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.insight-title { font-size: 13.5px; font-weight: 600; color: var(--text-primary); margin-bottom: 5px; }
+.insight-text { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+.insight-text strong { color: var(--text-primary); font-weight: 600; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+@media (max-width: 1100px) {
+  .kpi-strip { grid-template-columns: repeat(3,1fr); }
+  .grid-2, .grid-1-2 { grid-template-columns: 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div id="tip"></div>
+
+<header>
+  <div class="header-inner">
+    <div class="header-brand">
+      <span class="brand-tag">Euphree</span>
+      <span class="brand-sep"></span>
+      <span class="brand-label">Velotric Intel</span>
+      <span class="brand-sep"></span>
+      <span class="brand-sub">Competitor dealer network — confidential</span>
+    </div>
+    <nav>
+      <button class="tab-btn active" onclick="sw('overview',this)">Overview</button>
+      <button class="tab-btn" onclick="sw('california',this)">California</button>
+      <button class="tab-btn" onclick="sw('territory',this)">Territory</button>
+      <button class="tab-btn" onclick="sw('contacts',this)">Contacts</button>
+      <button class="tab-btn" onclick="sw('insights',this)">Insights</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- KPI STRIP -->
+  <div class="kpi-strip">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Contacts</div>
+      <div class="kpi-value">955</div>
+      <div class="kpi-sub">Across 46 states</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">CA Revenue</div>
+      <div class="kpi-value">$2.97M</div>
+      <div class="kpi-sub">123 CA dealer accounts</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">Repeat Customers</div>
+      <div class="kpi-value">369</div>
+      <div class="kpi-sub">Subsequent orders</div>
+    </div>
+    <div class="kpi-card amber">
+      <div class="kpi-label">First-Order Stage</div>
+      <div class="kpi-value">453</div>
+      <div class="kpi-sub">47% — not yet loyal</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Reps Tracked</div>
+      <div class="kpi-value">14</div>
+      <div class="kpi-sub">Velotric field team</div>
+    </div>
+  </div>
+
+  <!-- ── OVERVIEW ── -->
+  <div class="view active" id="view-overview">
+    <div class="page-header">
+      <div class="page-title">National Overview</div>
+      <div class="page-sub">Distribution, pipeline health, and sales force breakdown</div>
+    </div>
+
+    <div class="grid-2 mb16">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">Contacts by State</div><div class="card-desc">Top 20 states by dealer count</div></div></div>
+        <div class="card-body"><div class="chart-h280"><canvas id="stateChart"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">Pipeline Stage Breakdown</div><div class="card-desc">All 955 contacts</div></div></div>
+        <div class="card-body"><div class="chart-donut"><canvas id="lifecycleChart"></canvas></div></div>
+      </div>
+    </div>
+
+    <div class="grid-2 mb16">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">Velotric Sales Reps</div><div class="card-desc">Accounts managed per representative</div></div></div>
+        <div class="card-body"><div class="rep-list" id="repBarList"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">U.S. Dealer Density</div><div class="card-desc">Contact count by state</div></div></div>
+        <div class="map-wrap" id="usMapContainer"></div>
+        <div class="map-footer">
+          <span class="map-legend-label">Low</span>
+          <div class="map-gradient"></div>
+          <span class="map-legend-label">High</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CALIFORNIA ── -->
+  <div class="view" id="view-california">
+    <div class="page-header">
+      <div class="page-title">California</div>
+      <div class="page-sub">Velotric's largest market — $2,972,861 across 123 accounts</div>
+    </div>
+
+    <div class="grid-2 mb16">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">Revenue by City</div><div class="card-desc">Top 15 California cities</div></div></div>
+        <div class="card-body"><div class="chart-h300"><canvas id="caCityChart"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">Pipeline Stage Mix</div><div class="card-desc">California accounts only</div></div></div>
+        <div class="card-body"><div class="chart-donut"><canvas id="caLcChart"></canvas></div></div>
+      </div>
+    </div>
+
+    <div class="grid-2 mb16">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">Dealers by Revenue Tier</div><div class="card-desc">California account segmentation</div></div></div>
+        <div class="card-body"><div class="chart-h240"><canvas id="bucketChart"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">CA Rep Coverage</div><div class="card-desc">Accounts per representative in California</div></div></div>
+        <div class="card-body"><div class="rep-list" id="caRepBarList"></div></div>
+      </div>
+    </div>
+
+    <div class="card mb16">
+      <div class="card-head"><div><div class="card-title">Top California Accounts</div><div class="card-desc">Sorted by total revenue — 20 shown</div></div></div>
+      <div class="card-body no-pad">
+        <div class="table-scroll">
+          <table class="data-table" id="caTable"></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TERRITORY ── -->
+  <div class="view" id="view-territory">
+    <div class="page-header">
+      <div class="page-title">Western Territory</div>
+      <div class="page-sub">Peter Hall &amp; Zhan Tang — $2,626,547 total managed revenue</div>
+    </div>
+
+    <div class="grid-2 mb16">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">Revenue by State</div><div class="card-desc">Western territory breakdown</div></div></div>
+        <div class="card-body"><div class="chart-h280"><canvas id="peterStateChart"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">Revenue Share</div><div class="card-desc">State-level distribution</div></div></div>
+        <div class="card-body"><div class="chart-donut"><canvas id="peterPieChart"></canvas></div></div>
+      </div>
+    </div>
+
+    <div class="card mb16">
+      <div class="card-head"><div><div class="card-title">Territory Summary</div><div class="card-desc">Revenue and account counts by state</div></div></div>
+      <div class="card-body no-pad">
+        <div class="table-scroll"><table class="data-table" id="peterTable"></table></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CONTACTS ── -->
+  <div class="view" id="view-contacts">
+    <div class="page-header">
+      <div class="page-title">Contact Register</div>
+      <div class="page-sub">All tracked Velotric dealer contacts</div>
+    </div>
+    <div class="card">
+      <div class="filter-row">
+        <input type="text" class="filter-input" id="searchInput" placeholder="Search name, company, city, state…">
+        <select class="filter-select" id="stateFilter"><option value="">All states</option></select>
+        <select class="filter-select" id="lcFilter"><option value="">All stages</option></select>
+      </div>
+      <div class="card-body no-pad">
+        <div class="table-scroll"><table class="data-table" id="allTable"></table></div>
+      </div>
+      <div class="filter-count" id="tableCount"></div>
+    </div>
+  </div>
+
+  <!-- ── INSIGHTS ── -->
+  <div class="view" id="view-insights">
+    <div class="page-header">
+      <div class="page-title">Strategic Insights</div>
+      <div class="page-sub">Key findings for Euphree leadership</div>
+    </div>
+    <div class="insight-grid">
+      <div class="insight-card accent-blue">
+        <div class="insight-icon">🎯</div>
+        <div>
+          <div class="insight-title">California is Velotric's primary market</div>
+          <div class="insight-text"><strong>$2.97M</strong> generated across 123 CA dealer accounts. The top 10 alone represent <strong>$1.28M</strong>. Bikes &amp; Riders (Rocklin), CA eBikes Fair Oaks, and Electric Bike Center are the highest-value conquest targets for Euphree.</div>
+        </div>
+      </div>
+      <div class="insight-card accent-blue">
+        <div class="insight-icon">🌎</div>
+        <div>
+          <div class="insight-title">Present in 46 states — national scale</div>
+          <div class="insight-text">Beyond CA, Velotric's largest markets are <strong>Florida (67), New York (49), Pennsylvania (49), Texas (48),</strong> and Illinois (42). These are the priority states for Euphree's competitive dealer outreach.</div>
+        </div>
+      </div>
+      <div class="insight-card accent-amber">
+        <div class="insight-icon">⚡</div>
+        <div>
+          <div class="insight-title">47% of accounts haven't formed loyalty yet</div>
+          <div class="insight-text"><strong>453 of 955 contacts</strong> are at the first-order stage — they've tried Velotric but haven't reordered. These are the easiest accounts to flip before repeat-purchase habits solidify.</div>
+        </div>
+      </div>
+      <div class="insight-card accent-red">
+        <div class="insight-icon">⚠️</div>
+        <div>
+          <div class="insight-title">One rep owns Velotric's top CA accounts</div>
+          <div class="insight-text">Donnie Mccorkle manages the top 7 CA accounts by revenue — totaling over <strong>$878,000</strong>. Bikes &amp; Riders ($188K), CA eBikes ($170K), Big Sur Adventures ($109K). He is their single most important California asset.</div>
+        </div>
+      </div>
+      <div class="insight-card accent-green">
+        <div class="insight-icon">📍</div>
+        <div>
+          <div class="insight-title">Colorado: $129K average revenue per account</div>
+          <div class="insight-text">Peter Hall's Colorado territory produces <strong>$1.03M from just 8 accounts</strong> — the highest revenue-per-dealer of any territory. These are premium, high-volume accounts worth targeting directly.</div>
+        </div>
+      </div>
+      <div class="insight-card accent-green">
+        <div class="insight-icon">🏪</div>
+        <div>
+          <div class="insight-title">38% are loyal repeat customers</div>
+          <div class="insight-text"><strong>369 accounts</strong> are actively reordering. Euphree should benchmark its own dealer retention against this number and identify the markets where Velotric's repeat rate is weakest.</div>
+        </div>
+      </div>
+      <div class="insight-card accent-red">
+        <div class="insight-icon">💰</div>
+        <div>
+          <div class="insight-title">18% of CA revenue sits in 3 accounts</div>
+          <div class="insight-text">Bikes &amp; Riders, Electric Bike Center CA, and CA eBikes Fair Oaks together represent <strong>$542,550</strong> — nearly a fifth of Velotric's California revenue. Winning just one would be a significant competitive blow.</div>
+        </div>
+      </div>
+      <div class="insight-card accent-amber">
+        <div class="insight-icon">🗺️</div>
+        <div>
+          <div class="insight-title">Peter Hall controls the entire Western U.S.</div>
+          <div class="insight-text">One rep manages <strong>$2.63M across 8 states</strong>: CO, CA, AZ, UT, NV, NM, WY, SC. This concentration creates a single point of failure for Velotric — and a single relationship for Euphree to understand and counter.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── DATA ──
+const D = {
+  states: {labels:["CA","Florida","New York","Pennsylvania","Texas","Illinois","Ohio","Az","Idaho","Michigan","North Carolina","CO","New Jersey","Indiana","Wisconsin","Virginia","Missouri","Oregon","Georgia","Massachusetts"],values:[123,67,49,49,48,42,41,39,38,36,34,33,31,31,26,26,22,21,19,18]},
+  lifecycle: {labels:["First Order / Opportunity","Repeat Customer","Store Visited","Sales Qualified Lead"],values:[453,369,128,5]},
+  reps: {labels:["James Oh","Peter Hall","John Owen","Andrew Gerstel","Ross Browning","Donnie Mccorkle","Bradley Davison","Christopher Baer","Regina DeLarco","Zhan Tang","Phillip Gutierrez","Elaine Geng","David Wilson","Glenn Siemons"],values:[226,145,130,115,93,68,66,59,26,12,4,4,4,3]},
+  caCity: {labels:["Rocklin","Walnut Creek","Fair Oaks","Santa Monica","Santa Cruz","San Clemente","Carmel","Morro Bay","Hermosa Beach","Carlsbad","Modesto","Palo Alto","Santa Fe Springs","San Diego","Stanford"],values:[188373.56,183723.1,170453.52,153197.21,131554.86,127918.15,109685.64,108389.97,101627.99,92512.7,89694.98,86138.04,81118.8,80936.19,76455.1]},
+  caLc: {labels:["First Order","Repeat Customer","SQL","Store Visited"],values:[72,49,1,1]},
+  bucket: {labels:["< $5K","$5K–20K","$20K–50K","$50K–100K","$100K+"],values:[37,21,28,10,7]},
+  peterStates: [{"State":"CO","sum":1033179.38,"count":8},{"State":"CA","sum":800182.14,"count":31},{"State":"Az","sum":461047.89,"count":20},{"State":"UT","sum":111297.88,"count":4},{"State":"SC","sum":97900.66,"count":1},{"State":"NV","sum":83649.31,"count":3},{"State":"NM","sum":34148.88,"count":2},{"State":"WY","sum":5249.67,"count":1}],
+  allStates: [{"s":"Alabama","n":10},{"s":"Arkansas","n":4},{"s":"Az","n":39},{"s":"CA","n":123},{"s":"CO","n":33},{"s":"Connecticut","n":8},{"s":"Delaware","n":6},{"s":"DC","n":2},{"s":"Florida","n":67},{"s":"Georgia","n":19},{"s":"Idaho","n":38},{"s":"Illinois","n":42},{"s":"Indiana","n":31},{"s":"Iowa","n":17},{"s":"Kansas","n":1},{"s":"Kentucky","n":1},{"s":"Louisiana","n":6},{"s":"Maine","n":2},{"s":"Maryland","n":9},{"s":"Massachusetts","n":18},{"s":"Michigan","n":36},{"s":"Minnesota","n":10},{"s":"Missouri","n":22},{"s":"Montana","n":3},{"s":"NV","n":6},{"s":"Nebraska","n":3},{"s":"New Hampshire","n":3},{"s":"New Jersey","n":31},{"s":"New Mexico","n":7},{"s":"New York","n":49},{"s":"North Carolina","n":34},{"s":"Ohio","n":41},{"s":"Oklahoma","n":5},{"s":"Oregon","n":21},{"s":"Pennsylvania","n":49},{"s":"Rhode Island","n":1},{"s":"South Carolina","n":17},{"s":"South Dakota","n":2},{"s":"Tennessee","n":15},{"s":"Texas","n":48},{"s":"UT","n":12},{"s":"Vermont","n":1},{"s":"Virginia","n":26},{"s":"WY","n":1},{"s":"Washington","n":10},{"s":"Wisconsin","n":26}]
+};
+
+const caAccounts = [
+  {name:"Gleb Rezvukhin",co:"Bikes and Riders Cycle Shop",city:"Rocklin",rev:188373.56,stage:"Opportunity",rep:"Donnie Mccorkle"},
+  {name:"Cindy Deng",co:"Electric Bike Center CA",city:"Walnut Creek",rev:183723.10,stage:"Opportunity",rep:"Peter Hall"},
+  {name:"Erica Frith",co:"CA eBikes | Fair Oaks",city:"Fair Oaks",rev:170453.52,stage:"Opportunity",rep:"Donnie Mccorkle"},
+  {name:"Mike Ahern",co:"Current eBikes",city:"Santa Cruz",rev:120274.67,stage:"Opportunity",rep:"Donnie Mccorkle"},
+  {name:"Joaquin Sullivan",co:"Big Sur Adventures",city:"Carmel",rev:109685.64,stage:"Opportunity",rep:"Donnie Mccorkle"},
+  {name:"Jon Richert",co:"Red Tail Bikes",city:"Morro Bay",rev:108389.97,stage:"Opportunity",rep:"Donnie Mccorkle"},
+  {name:"Ericson Monsalud",co:"Bike Attack",city:"Santa Monica",rev:104758.06,stage:"Opportunity",rep:"Donnie Mccorkle"},
+  {name:"Clint Hough",co:"Trick Ebikes",city:"Hermosa Beach",rev:97480.89,stage:"Customer",rep:"Peter Hall"},
+  {name:"Sajad Ahmadi",co:"Sirr John Moto",city:"San Clemente",rev:95507.97,stage:"Customer",rep:"Peter Hall"},
+  {name:"Eddy Maiello",co:"Carlsbad e-Bikes & More",city:"Carlsbad",rev:92512.70,stage:"Customer",rep:"Peter Hall"},
+  {name:"Cindy D",co:"Electric Bike CA",city:"Palo Alto",rev:86138.04,stage:"Opportunity",rep:"Zhan Tang"},
+  {name:"Saphiant Enterprises",co:"Velopower Inc",city:"Santa Fe Springs",rev:81118.80,stage:"Opportunity",rep:"Ross Browning"},
+  {name:"Donald Meyer",co:"Campus Bike Shop",city:"Stanford",rev:76455.10,stage:"Opportunity",rep:"Donnie Mccorkle"},
+  {name:"Scott Holbrook",co:"A Town Bikes",city:"Auburn",rev:76434.06,stage:"Opportunity",rep:"Donnie Mccorkle"},
+  {name:"Ben Trom",co:"Open Trails Ebikes",city:"Santa Clarita",rev:67605.79,stage:"Customer",rep:"Peter Hall"},
+  {name:"Brian Zahra",co:"Fun Sport Bikes",city:"Modesto",rev:65158.01,stage:"Opportunity",rep:"Donnie Mccorkle"},
+  {name:"Dax Downey",co:"Green Line Cycles",city:"Chico",rev:64430.27,stage:"Opportunity",rep:"Donnie Mccorkle"},
+  {name:"Ray Pages",co:"Santa Monica Bike Shop",city:"Santa Monica",rev:48439.15,stage:"Opportunity",rep:"Donnie Mccorkle"},
+  {name:"Kerry McKoy",co:"Bike Bling",city:"Escondido",rev:43462.95,stage:"Customer",rep:"Peter Hall"},
+  {name:"Joshua Houssiere",co:"The Bike Shop @ Woodward",city:"Fresno",rev:41928.78,stage:"Opportunity",rep:"Donnie Mccorkle"}
+];
+
+const allContacts = [
+  ...caAccounts.map(a=>({...a,state:"CA"})),
+  {name:"Eddie Valerio",co:"Surf Buggy",city:"Surf City",state:"New Jersey",stage:"Opportunity"},
+  {name:"Tom Roth",co:"Cape Island Bikes",city:"Cape May",state:"New Jersey",stage:"Opportunity"},
+  {name:"Francisco Salazar",co:"Bronx Cycles",city:"Bronx",state:"New York",stage:"Opportunity"},
+  {name:"Dino Filippidis",co:"Tonys Bicycles",city:"Queens",state:"New York",stage:"Opportunity"},
+  {name:"Victoria Firth",co:"Firth & Wilson Transport",city:"Philadelphia",state:"Pennsylvania",stage:"Opportunity"},
+  {name:"Mike Honeycutt",co:"Bustleton Bikes",city:"Philadelphia",state:"Pennsylvania",stage:"Opportunity"},
+  {name:"Aaron Adams",co:"Bretz RV & Marine",city:"Nampa",state:"Idaho",stage:"Opportunity"},
+  {name:"Bill Reed",co:"Reed Cycle",city:"Boise",state:"Idaho",stage:"Store Visited"},
+  {name:"Antonio Gonzalez",co:"Tri Town",city:"Boise",state:"Idaho",stage:"Store Visited"},
+  {name:"Phil Vega",co:"Joyride Cycles",city:"Boise",state:"Idaho",stage:"Store Visited"},
+  {name:"Abe Arbizo",co:"Rides N Motion Electric Bikes",city:"Peoria",state:"AZ",stage:"Customer",rev:108},
+  {name:"Clint Lard",co:"Fat Tire Cycles",city:"Albuquerque",state:"NM",stage:"Customer",rev:699},
+  {name:"Paul Sistowicz",co:"Fair Wheel Bikes",city:"Tucson",state:"AZ",stage:"Customer",rev:699.5},
+  {name:"Randy Archer",co:"Archers Bikes",city:"Prescott Valley",state:"AZ",stage:"Customer",rev:799.5},
+  {name:"David Ament",co:"Family Auto - Happy Ebikes",city:"Salt Lake City",state:"UT",stage:"Customer",rev:899},
+  {name:"Scott Miller",co:"Sedona Tours & Rentals",city:"Sedona",state:"AZ",stage:"Customer",rev:1600},
+  {name:"Sheri Jagow",co:"BikeCraze",city:"Anaheim",state:"CA",stage:"Customer",rev:2217},
+  {name:"Adam Howell",co:"Electric Bikes of AZ",city:"Peoria",state:"AZ",stage:"Customer",rev:2398.5},
+  {name:"Alvin Alviso",co:"562 Ebikes",city:"Cerritos",state:"CA",stage:"Customer",rev:32416.9},
+  {name:"Kiyoshi Nicholson",co:"Backroad Bicycles",city:"Glendale",state:"CA",stage:"Customer",rev:23362.04},
+  {name:"Gregorio Martinez",co:"Border Cycle",city:"San Diego",state:"CA",stage:"Customer",rev:699.5},
+];
+
+// ── CHART DEFAULTS ──
+Chart.defaults.font.family = "'IBM Plex Sans', system-ui, sans-serif";
+Chart.defaults.font.size = 12;
+Chart.defaults.color = '#6b7280';
+
+const PALETTE = ['#2563eb','#16a34a','#d97706','#dc2626','#7c3aed','#0891b2','#be185d','#15803d'];
+const TT = {
+  backgroundColor:'#111827', borderColor:'#374151', borderWidth:1,
+  titleFont:{size:13,weight:'600'}, bodyFont:{size:12},
+  padding:10, cornerRadius:6
+};
+
+// States bar
+new Chart(document.getElementById('stateChart'), {
+  type:'bar',
+  data:{
+    labels:D.states.labels,
+    datasets:[{
+      data:D.states.values,
+      backgroundColor:D.states.values.map(v => {
+        const t = v/123;
+        return `rgba(37,99,235,${0.2 + t*0.75})`;
+      }),
+      borderRadius:3, borderSkipped:false, borderColor:'transparent'
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{...TT, callbacks:{label:c=>`  ${c.parsed.y} contacts`}}},
+    scales:{
+      x:{grid:{display:false}, ticks:{font:{size:10}}},
+      y:{grid:{color:'#f3f4f6'}, border:{display:false}, ticks:{font:{size:10}}}
+    }
+  }
+});
+
+// Lifecycle doughnut
+new Chart(document.getElementById('lifecycleChart'), {
+  type:'doughnut',
+  data:{
+    labels:D.lifecycle.labels,
+    datasets:[{data:D.lifecycle.values, backgroundColor:['#2563eb','#16a34a','#d97706','#94a3b8'], borderColor:'#fff', borderWidth:3, hoverOffset:4}]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false, cutout:'68%',
+    plugins:{
+      legend:{position:'bottom', labels:{boxWidth:10, padding:12, font:{size:12}}},
+      tooltip:{...TT, callbacks:{label:c=>`  ${c.label}: ${c.parsed} (${Math.round(c.parsed/955*100)}%)`}}
+    }
+  }
+});
+
+// Rep bars
+function makeRepBars(id, labels, values) {
+  const el = document.getElementById(id);
+  const max = Math.max(...values);
+  el.innerHTML = '';
+  labels.forEach((n, i) => {
+    const pct = (values[i]/max*100).toFixed(1);
+    const div = document.createElement('div');
+    div.className = 'rep-row';
+    div.innerHTML = `
+      <span class="rep-name" title="${n}">${n}</span>
+      <div class="rep-track"><div class="rep-fill" style="width:${pct}%;background:${PALETTE[i%PALETTE.length]};"></div></div>
+      <span class="rep-count">${values[i]}</span>`;
+    el.appendChild(div);
+  });
+}
+makeRepBars('repBarList', D.reps.labels, D.reps.values);
+makeRepBars('caRepBarList', ['Donnie Mccorkle','Peter Hall','Zhan Tang','Ross Browning','Andrew Gerstel','James Oh'], [68,54,12,10,8,7]);
+
+// US Map
+const stateMap = {};
+const abbrevMap = {'Alabama':'AL','Arkansas':'AR','Az':'AZ','Arizona':'AZ','CA':'CA','California':'CA','CO':'CO','Colorado':'CO','Connecticut':'CT','Delaware':'DE','DC':'DC','District of Columbia':'DC','Florida':'FL','Georgia':'GA','Idaho':'ID','Illinois':'IL','Indiana':'IN','Iowa':'IA','Kansas':'KS','Kentucky':'KY','Louisiana':'LA','Maine':'ME','Maryland':'MD','Massachusetts':'MA','Michigan':'MI','Minnesota':'MN','Missouri':'MO','Montana':'MT','NV':'NV','Nevada':'NV','Nebraska':'NE','New Hampshire':'NH','New Jersey':'NJ','New Mexico':'NM','New York':'NY','North Carolina':'NC','Ohio':'OH','Oklahoma':'OK','Oregon':'OR','Pennsylvania':'PA','Rhode Island':'RI','South Carolina':'SC','South Dakota':'SD','Tennessee':'TN','Texas':'TX','UT':'UT','Utah':'UT','Vermont':'VT','Virginia':'VA','WY':'WY','Wyoming':'WY','Washington':'WA','Wisconsin':'WI'};
+D.allStates.forEach(s => { stateMap[abbrevMap[s.s]||s.s] = s.n; });
+
+function mapColor(abbr) {
+  const n = stateMap[abbr] || 0;
+  if (!n) return '#f1f5f9';
+  const t = Math.min(n/123, 1);
+  const r = Math.round(219 - t*182), g = Math.round(234 - t*140), b = Math.round(254 - t*36);
+  return `rgb(${r},${g},${b})`;
+}
+
+const SP = {'AL':{d:'M530,360 L535,360 L540,390 L537,400 L527,402 L520,395 Z',cx:531,cy:382},'AZ':{d:'M175,310 L230,310 L230,380 L175,380 Z',cx:202,cy:345},'AR':{d:'M490,330 L530,330 L530,360 L490,360 Z',cx:510,cy:345},'CA':{d:'M115,220 L165,200 L185,240 L190,300 L165,310 L130,340 L115,320 L105,270 Z',cx:148,cy:275},'CO':{d:'M265,270 L345,268 L345,318 L265,318 Z',cx:305,cy:293},'CT':{d:'M660,195 L670,195 L671,210 L659,210 Z',cx:665,cy:202},'DE':{d:'M645,230 L653,230 L653,248 L644,248 Z',cx:648,cy:239},'FL':{d:'M530,395 L575,395 L590,430 L580,450 L558,455 L545,440 L535,415 Z',cx:558,cy:425},'GA':{d:'M545,360 L585,360 L585,400 L565,405 L545,395 Z',cx:565,cy:380},'ID':{d:'M200,160 L240,155 L255,195 L240,230 L215,230 L205,200 Z',cx:227,cy:195},'IL':{d:'M500,255 L520,255 L522,320 L498,322 Z',cx:510,cy:288},'IN':{d:'M525,255 L548,255 L548,305 L525,305 Z',cx:536,cy:280},'IA':{d:'M445,235 L498,235 L498,268 L445,270 Z',cx:471,cy:252},'KS':{d:'M375,290 L450,290 L450,320 L375,320 Z',cx:412,cy:305},'KY':{d:'M530,295 L595,295 L595,320 L528,322 Z',cx:562,cy:308},'LA':{d:'M480,380 L520,378 L522,410 L500,415 L478,405 Z',cx:500,cy:397},'ME':{d:'M680,145 L695,140 L700,165 L690,175 L678,165 Z',cx:689,cy:158},'MD':{d:'M620,240 L648,238 L650,252 L620,252 Z',cx:635,cy:246},'MA':{d:'M658,188 L695,185 L695,198 L657,200 Z',cx:677,cy:193},'MI':{d:'M525,195 L558,188 L565,225 L545,235 L525,230 Z',cx:545,cy:212},'MN':{d:'M432,170 L478,168 L480,235 L432,235 Z',cx:456,cy:202},'MS':{d:'M500,355 L528,355 L530,400 L498,402 Z',cx:514,cy:378},'MO':{d:'M455,295 L505,293 L505,348 L455,350 Z',cx:480,cy:322},'MT':{d:'M218,145 L330,142 L330,190 L218,192 Z',cx:274,cy:167},'NE':{d:'M360,255 L445,253 L445,290 L360,292 Z',cx:402,cy:272},'NV':{d:'M158,220 L200,210 L210,280 L175,305 L148,270 Z',cx:180,cy:260},'NH':{d:'M665,165 L678,163 L680,190 L664,193 Z',cx:672,cy:178},'NJ':{d:'M645,218 L660,215 L663,240 L643,242 Z',cx:652,cy:229},'NM':{d:'M240,310 L302,310 L302,375 L238,375 Z',cx:270,cy:342},'NY':{d:'M610,185 L665,180 L668,215 L640,218 L608,205 Z',cx:638,cy:200},'NC':{d:'M580,315 L655,310 L658,332 L578,335 Z',cx:618,cy:323},'ND':{d:'M348,165 L430,163 L430,198 L348,200 Z',cx:389,cy:182},'OH':{d:'M552,245 L588,243 L590,295 L550,297 Z',cx:570,cy:270},'OK':{d:'M360,325 L455,323 L458,360 L358,362 Z',cx:408,cy:342},'OR':{d:'M130,180 L200,172 L202,225 L130,230 Z',cx:166,cy:202},'PA':{d:'M588,212 L645,210 L647,240 L586,242 Z',cx:616,cy:226},'RI':{d:'M675,198 L682,198 L683,208 L674,208 Z',cx:679,cy:203},'SC':{d:'M578,338 L620,335 L622,368 L575,368 Z',cx:598,cy:352},'SD':{d:'M348,198 L430,197 L430,234 L348,234 Z',cx:389,cy:216},'TN':{d:'M508,325 L580,322 L582,350 L506,352 Z',cx:544,cy:337},'TX':{d:'M310,320 L420,318 L425,390 L370,420 L310,385 Z',cx:368,cy:362},'UT':{d:'M225,260 L272,258 L272,310 L225,312 Z',cx:248,cy:285},'VT':{d:'M655,168 L666,166 L667,188 L654,190 Z',cx:661,cy:179},'VA':{d:'M580,270 L640,265 L645,295 L577,298 Z',cx:611,cy:282},'WA':{d:'M138,140 L200,138 L200,172 L138,175 Z',cx:169,cy:157},'WV':{d:'M580,262 L610,258 L615,290 L578,293 Z',cx:597,cy:276},'WI':{d:'M468,188 L505,185 L508,238 L466,240 Z',cx:487,cy:213},'WY':{d:'M248,215 L330,212 L332,263 L248,265 Z',cx:290,cy:238}};
+
+(function() {
+  const wrap = document.getElementById('usMapContainer');
+  let svg = `<svg viewBox="70 130 660 350" xmlns="http://www.w3.org/2000/svg">`;
+  Object.entries(SP).forEach(([a, i]) => {
+    const n = stateMap[a] || 0;
+    svg += `<path class="state-path" d="${i.d}" fill="${mapColor(a)}"
+      onmouseenter="showTip(event,'${a}',${n})" onmousemove="moveTip(event)" onmouseleave="hideTip()"/>`;
+    if (n > 15) svg += `<text x="${i.cx}" y="${i.cy+4}" text-anchor="middle" font-size="7"
+      fill="${n>50?'#fff':'#374151'}" font-family="'IBM Plex Sans',sans-serif" pointer-events="none">${a}</text>`;
+  });
+  svg += '</svg>';
+  wrap.innerHTML = svg;
+})();
+
+function showTip(e, abbr, n) {
+  const t = document.getElementById('tip');
+  t.innerHTML = `<strong>${abbr}</strong>${n} contacts`;
+  t.style.display = 'block';
+  moveTip(e);
+}
+function moveTip(e) {
+  const t = document.getElementById('tip');
+  t.style.left = (e.clientX + 14) + 'px';
+  t.style.top  = (e.clientY - 10) + 'px';
+}
+function hideTip() { document.getElementById('tip').style.display = 'none'; }
+
+// CA City chart
+new Chart(document.getElementById('caCityChart'), {
+  type:'bar',
+  data:{
+    labels:D.caCity.labels,
+    datasets:[{
+      data:D.caCity.values,
+      backgroundColor:D.caCity.values.map((v,i)=>`rgba(37,99,235,${0.25+i/14*0.65})`),
+      borderRadius:3, borderColor:'transparent'
+    }]
+  },
+  options:{
+    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{...TT, callbacks:{label:c=>`  $${c.parsed.x.toLocaleString()}`}}},
+    scales:{
+      x:{grid:{color:'#f3f4f6'}, border:{display:false}, ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'K', font:{size:10}}},
+      y:{grid:{display:false}, ticks:{font:{size:11}}}
+    }
+  }
+});
+
+// CA lifecycle
+new Chart(document.getElementById('caLcChart'), {
+  type:'doughnut',
+  data:{
+    labels:D.caLc.labels,
+    datasets:[{data:D.caLc.values, backgroundColor:['#2563eb','#16a34a','#7c3aed','#94a3b8'], borderColor:'#fff', borderWidth:3, hoverOffset:4}]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false, cutout:'68%',
+    plugins:{
+      legend:{position:'bottom', labels:{boxWidth:10, padding:12}},
+      tooltip:{...TT, callbacks:{label:c=>`  ${c.label}: ${c.parsed}`}}
+    }
+  }
+});
+
+// Bucket
+new Chart(document.getElementById('bucketChart'), {
+  type:'bar',
+  data:{
+    labels:D.bucket.labels,
+    datasets:[{data:D.bucket.values, backgroundColor:['#93c5fd','#60a5fa','#3b82f6','#2563eb','#1d4ed8'], borderRadius:4, borderColor:'transparent'}]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{...TT, callbacks:{label:c=>`  ${c.parsed.y} dealers`}}},
+    scales:{
+      x:{grid:{display:false}, ticks:{font:{size:11}}},
+      y:{grid:{color:'#f3f4f6'}, border:{display:false}, ticks:{font:{size:10}}}
+    }
+  }
+});
+
+// Peter state bar
+new Chart(document.getElementById('peterStateChart'), {
+  type:'bar',
+  data:{
+    labels:D.peterStates.map(s=>s.State),
+    datasets:[{
+      data:D.peterStates.map(s=>s.sum),
+      backgroundColor:PALETTE, borderRadius:4, borderColor:'transparent'
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{...TT, callbacks:{label:c=>`  $${c.parsed.y.toLocaleString()}`}}},
+    scales:{
+      x:{grid:{display:false}, ticks:{font:{size:12}}},
+      y:{grid:{color:'#f3f4f6'}, border:{display:false}, ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'K', font:{size:10}}}
+    }
+  }
+});
+
+// Peter pie
+new Chart(document.getElementById('peterPieChart'), {
+  type:'doughnut',
+  data:{
+    labels:D.peterStates.map(s=>s.State),
+    datasets:[{data:D.peterStates.map(s=>s.sum), backgroundColor:PALETTE, borderColor:'#fff', borderWidth:3, hoverOffset:4}]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false, cutout:'65%',
+    plugins:{
+      legend:{position:'bottom', labels:{boxWidth:10, padding:10}},
+      tooltip:{...TT, callbacks:{label:c=>`  ${c.label}: $${c.parsed.toLocaleString()}`}}
+    }
+  }
+});
+
+// ── TABLES ──
+function badge(stage) {
+  if (!stage) return '';
+  if (stage === 'Opportunity' || stage.includes('First')) return `<span class="badge badge-blue">Opportunity</span>`;
+  if (stage === 'Customer'    || stage.includes('sub'))   return `<span class="badge badge-green">Customer</span>`;
+  if (stage.includes('visit') || stage === 'Store Visited') return `<span class="badge badge-amber">Store Visit</span>`;
+  return `<span class="badge badge-gray">SQL</span>`;
+}
+
+// CA table
+(function() {
+  const t = document.getElementById('caTable');
+  t.innerHTML = `<thead><tr><th>#</th><th>Contact</th><th>Company</th><th>City</th><th style="text-align:right">Revenue</th><th>Stage</th><th>Rep</th></tr></thead>`;
+  const tb = document.createElement('tbody');
+  caAccounts.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="idx">${i+1}</td><td class="primary">${r.name}</td><td>${r.co}</td><td class="mono" style="font-size:11.5px">${r.city}</td><td class="num">$${r.rev.toLocaleString()}</td><td>${badge(r.stage)}</td><td style="color:var(--text-muted);font-size:12px">${r.rep||'—'}</td>`;
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+})();
+
+// Peter table
+(function() {
+  const t = document.getElementById('peterTable');
+  t.innerHTML = `<thead><tr><th>#</th><th>State</th><th>Accounts</th><th style="text-align:right">Total Revenue</th><th style="text-align:right">Avg. per Account</th></tr></thead>`;
+  const tb = document.createElement('tbody');
+  D.peterStates.forEach((s, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="idx">${i+1}</td><td class="primary">${s.State}</td><td style="font-family:var(--mono);font-size:12px">${s.count}</td><td class="num">$${Math.round(s.sum).toLocaleString()}</td><td style="font-family:var(--mono);font-size:12px;color:var(--amber);text-align:right;font-weight:500">$${Math.round(s.sum/s.count).toLocaleString()}</td>`;
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+})();
+
+// All contacts table
+const stateEl = document.getElementById('stateFilter');
+const lcEl    = document.getElementById('lcFilter');
+[...new Set(allContacts.map(c=>c.state))].sort().forEach(s => {
+  const o = document.createElement('option'); o.value=s; o.textContent=s; stateEl.appendChild(o);
+});
+[...new Set(allContacts.map(c=>c.stage))].sort().forEach(s => {
+  const o = document.createElement('option'); o.value=s; o.textContent=s; lcEl.appendChild(o);
+});
+
+function renderAll(data) {
+  const t = document.getElementById('allTable');
+  const cnt = document.getElementById('tableCount');
+  t.innerHTML = `<thead><tr><th>#</th><th>Contact</th><th>Company</th><th>City</th><th>State</th><th style="text-align:right">Revenue</th><th>Stage</th></tr></thead>`;
+  const tb = document.createElement('tbody');
+  data.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="idx">${i+1}</td><td class="primary">${r.name}</td><td>${r.co}</td><td class="mono" style="font-size:11.5px">${r.city||'—'}</td><td class="mono" style="font-size:11.5px">${r.state||'—'}</td><td class="num">${r.rev?'$'+r.rev.toLocaleString():'—'}</td><td>${badge(r.stage)}</td>`;
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+  cnt.textContent = `Showing ${data.length} of ${allContacts.length} contacts`;
+}
+
+function filter() {
+  const q  = document.getElementById('searchInput').value.toLowerCase();
+  const st = stateEl.value;
+  const lc = lcEl.value;
+  renderAll(allContacts.filter(c =>
+    (!q  || [c.name,c.co,c.city,c.state].some(v=>(v||'').toLowerCase().includes(q))) &&
+    (!st || c.state === st) &&
+    (!lc || c.stage === lc)
+  ));
+}
+document.getElementById('searchInput').addEventListener('input', filter);
+stateEl.addEventListener('change', filter);
+lcEl.addEventListener('change', filter);
+renderAll(allContacts);
+
+// ── TAB SWITCHING ──
+function sw(id, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
